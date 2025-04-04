@@ -74,7 +74,15 @@ schema(global_food_wastage_df) |> DataFrames.DataFrame
 fruit_wastage_df = filter(row -> row."Food Category" == "Fruits & Vegetables", global_food_wastage_df)
 
 # ╔═╡ 41452d55-e10f-44b9-9514-06ff7c57bf58
-Y, X = MLJ.unpack(fruit_wastage_df, ==(Symbol("Economic Loss (Million \$)")), colname -> true)
+begin
+    Y, X = MLJ.unpack(fruit_wastage_df, ==(Symbol("Economic Loss (Million \$)")), colname -> true)
+
+    
+    if isa(Y, DataFrame)
+        Y = Y[:, 1]
+    end
+end
+
 
 # ╔═╡ b69afa96-11ee-480d-9753-f5fcdcea128b
 ohenc_mach = machine(OneHotEncoder(), X) |> MLJ.fit!
