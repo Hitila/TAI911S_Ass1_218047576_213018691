@@ -4,199 +4,192 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ b1e0bca2-118a-11f0-0cac-5bedacf5e8af
+# ╔═╡ 6a40cdfe-1534-11f0-0433-f1cac58f77b1
 using PlutoUI
 
-# ╔═╡ 53a492b4-09ba-4b93-9406-37cfae922185
+# ╔═╡ a0ac7f63-52e9-475f-9425-bdc6f8aa6339
 using CSV
 
-# ╔═╡ 1d355f15-b655-4704-bfeb-89738a085434
+# ╔═╡ 7f67bd0c-b6fd-4487-b593-e7fa01cbe2da
 using DataFrames
 
-# ╔═╡ 62db11d9-df37-4f7e-bcc9-1a018f5cf6ce
+# ╔═╡ 9d4b9c2c-3abd-4642-8269-0a088550388f
 using MLJ
 
-# ╔═╡ e8e6f055-2d85-47ce-919f-614854544c0b
+# ╔═╡ 7ca56f78-4b6c-49ec-a6f5-a4d74f1a7b81
 using Statistics
 
-# ╔═╡ 24211a9e-4dd3-41c5-89e2-430743fe99fa
+# ╔═╡ a31337fb-f234-45a1-9284-815dd4aa1c2b
 using StatsBase
 
-# ╔═╡ df47a37f-c06c-4fee-97bb-d48e1beeff5e
+# ╔═╡ 7c3c1aa0-e5aa-4f74-9f30-a4e47686bbfb
 using CairoMakie
 
-# ╔═╡ 3da78949-76ba-41ef-9e48-d400abf4b8de
+# ╔═╡ dabf8152-7252-414e-8cfa-625f6f1da9c7
 using AlgebraOfGraphics
 
-# ╔═╡ 310988d3-603f-48db-92c9-571ed98bcdfe
+# ╔═╡ cc68413d-c330-4a2c-87cb-69982d195e12
 using Random
 
-# ╔═╡ 63522afe-af94-4c55-b2ae-87da79a84f14
+# ╔═╡ 17dd6fac-9f34-44d7-9595-3e627fdef0f6
 using MLJLinearModels
 
-# ╔═╡ 70b85c1f-43d9-4cd9-9111-e099a3b1fae1
-##Data Exploration
+# ╔═╡ 66f5e9c9-1bdf-4753-903c-ed287b4b8834
+## Data Exploration
 
-# ╔═╡ 3baa2cea-5421-4786-b72a-659b43218a3b
+# ╔═╡ 148c76c1-d1d7-4961-872d-06154869f3f1
 global_food_wastage_df = DataFrame(CSV.File("C:/Users/paulu/Desktop/Julia/global_food_wastage_dataset.csv", header=1))
 
-# ╔═╡ 381ed36b-f21e-4ce5-9c12-7d641416f096
+# ╔═╡ 93f54552-be58-40be-bce3-49dcc76325bf
 for col_name in names(global_food_wastage_df)
         println(col_name)
 end
 
-# ╔═╡ b32557d6-ab98-4445-bf3a-693344c7f52c
+# ╔═╡ 292e7075-5d0f-433a-a915-807506b0a841
 size(global_food_wastage_df)
 
-# ╔═╡ ff025cb2-b434-455b-b380-cc3a4b49cf3c
+# ╔═╡ 1631900f-0abe-4104-b7b0-d0811ef2b9e2
 describe(global_food_wastage_df)
 
-# ╔═╡ 395c9f7f-25dd-4fd6-af67-2967ab50c626
+# ╔═╡ 67372e8a-f0d9-4d2a-849a-cf4b2cdf6196
 schema(global_food_wastage_df) |> DataFrames.DataFrame
 
-# ╔═╡ 64e91150-a93b-4c77-b985-25a2753ac344
+# ╔═╡ b521cc88-164d-4cac-b64d-f1b6a37c6473
 coerce!(global_food_wastage_df, :Year => Continuous)
 
-# ╔═╡ 1c352c00-5bcd-4e05-a515-ccc1fd5c2e1b
+# ╔═╡ 1d7b4e76-2e70-473b-bdf4-422f6216e288
 coerce!(global_food_wastage_df, Textual => Multiclass)
 
-# ╔═╡ 02fea295-927c-4668-8688-54562fa4f97b
+# ╔═╡ 30651697-da9a-4775-a06e-c5522196af99
 begin
+    target_col = Symbol("Household Waste (%)")
 
-    target_col = Symbol("Economic Loss (Million \$)")
+    household_wastage_df = filter(row -> row."Food Category" == "Dairy Products", global_food_wastage_df)
 
-
-    fruit_wastage_df = filter(row -> row."Food Category" == "Fruits & Vegetables", global_food_wastage_df)
-
-
-    fruit_wastage_df = filter(row -> !ismissing(row[target_col]) && !isnan(row[target_col]), fruit_wastage_df)
+    household_wastage_df = filter(row -> !ismissing(row[target_col]) && !isnan(row[target_col]), household_wastage_df)
 end
 
-# ╔═╡ 7dfb6a80-f768-4b4c-8288-022f8a0269fd
+# ╔═╡ 3e496447-c476-4845-917d-6fbfb9b2591e
 begin
-    Y, X = MLJ.unpack(fruit_wastage_df, ==(target_col), colname -> true)
+    Y, X = MLJ.unpack(household_wastage_df, ==(target_col), colname -> true)
 
     if isa(Y, DataFrame)
         Y = Y[:, 1]
     end
 end
 
-
-# ╔═╡ 4f431b94-35ff-45ff-9b5b-0f89fd1b5481
+# ╔═╡ 75ab8d36-ef6c-4709-b810-b228b4c09be6
 ohenc = OneHotEncoder()
 
-# ╔═╡ f0aa7298-4cc1-4e72-8882-91774d851637
+# ╔═╡ 8e24f1b9-15b3-4de0-bdf2-1357d2da0849
 ohenc_mach = machine(ohenc, X)
 
-# ╔═╡ 39031809-4986-42e0-b0bc-179ee0efa882
-fit!(ohenc_mach)
+# ╔═╡ 2646efa1-020a-41bc-b9c6-98ecfa8f2d0c
+fit!(ohenc_mach, force=true)
 
-# ╔═╡ 319e8140-80d3-4380-ac15-190a01e8eec0
+# ╔═╡ 96a4706a-aee5-449d-a77c-6d5312d3cd5b
 X_encoded = MLJ.transform(ohenc_mach, X)
 
-# ╔═╡ e3c23527-884b-400d-bf54-f29ad3efe4a7
+# ╔═╡ cc8b72c6-fba4-4bc8-86c0-d5573c488c57
 variances = map(col -> var(skipmissing(col)), eachcol(X_encoded))
 
-# ╔═╡ d0633b09-9804-4a3b-a53b-6c9f56310c29
-high_variance_cols = findall(v -> v > 1e-6, variances)
+# ╔═╡ 55e15e74-9093-4b68-8448-05bc00b73b59
+high_variance_columns = findall(v -> v > 1e-6, variances)
 
-# ╔═╡ 7b0fd9ea-12ca-4bfd-9330-7a27b8aa3377
-X_high_variance = X_encoded[:, high_variance_cols]
+# ╔═╡ 89a54e46-8a8d-4114-92a8-960b5bfb62a3
+X_high_variance = X_encoded[:, high_variance_columns]
 
-# ╔═╡ 69d9548e-bcd4-4264-b94c-b8e90bf6b248
+# ╔═╡ ae17c699-2471-40a9-92af-66de7ca06f39
 X_standardizer = Standardizer()
 
-# ╔═╡ 1b820dc1-254f-458b-8ee3-56f1ad3fd59f
+# ╔═╡ fd58c116-c1b4-4ea8-b704-1a4cb0365163
 X_smach = machine(X_standardizer, X_high_variance)
 
-# ╔═╡ 99690036-4988-4f19-8ef1-9cbbe5b9a2b4
+# ╔═╡ 48bda9cc-e161-4552-837b-92923c139f33
 fit!(X_smach, force=true)
 
-# ╔═╡ 7d1b72b2-5cf6-4a9d-912a-87c981757ad8
+# ╔═╡ 46745806-370f-4d69-97e9-53e5e1a466e5
 X_norm = MLJ.transform(X_smach, X_high_variance)
 
-# ╔═╡ f12d3bc2-a590-46b2-9652-6cded4e549d0
+# ╔═╡ bf7c69b7-7288-44a2-a8f5-f107ed73bd48
 Y_standardizer = Standardizer()
 
-# ╔═╡ abba167d-fdd6-4ae1-90cd-08d6d21f1aa5
+# ╔═╡ 33369b1f-15d4-42e4-a4df-16191e1a5bc9
 Y_smach = machine(Y_standardizer, Y)
 
-# ╔═╡ 14b95e2b-b1e2-4dec-90e7-11b388fb7635
+# ╔═╡ 6ba87e58-3da3-46ee-a4f9-c5c2381f7deb
 fit!(Y_smach, force=true)
 
-# ╔═╡ 0980f411-b5d9-422a-bc55-d9ac8286d061
+# ╔═╡ 135eaab0-c727-45c6-8642-e5743b609110
 Y_norm = MLJ.transform(Y_smach, Y)
 
-# ╔═╡ 826ff561-937e-46d4-b7a2-4dae27b25576
+# ╔═╡ f8a07170-2fe9-4625-8af7-974dda6befca
 train_set, test_set = partition(1:nrow(X_norm), 0.85, shuffle=true)
 
-# ╔═╡ 32b05bbc-04a1-435a-9b44-8643790feafd
+# ╔═╡ f507776b-5694-425a-bbcc-37da0719b9cc
 X_train = X_norm[train_set, :]
 
-# ╔═╡ eaace6a5-bb27-4698-97da-843a909759f9
+# ╔═╡ 473aa558-b506-41d4-b6c4-a3481c0e87fe
 X_test = X_norm[test_set, :]
 
-# ╔═╡ 0812cb9d-cdbe-410b-8a7d-3d02169a2b7a
+# ╔═╡ bb27abed-bf47-4bc3-87eb-fe6320002afb
 Y_train = Y_norm[train_set]
 
-# ╔═╡ f5b2be39-06cb-4859-9295-79c3d329c0ad
+# ╔═╡ 99b35c51-d7e8-4e52-b879-c13977350802
 Y_test = Y_norm[test_set]
 
-# ╔═╡ f4f005ad-9b99-4754-a790-1a12bd1b338f
+# ╔═╡ 94f08588-1c8f-4eb7-ac09-1557a82dc661
 # Using Linear Regressor
 
-# ╔═╡ e6c6cf8b-0cf3-4128-b1ae-2de7cc7f6a03
+# ╔═╡ d94c32d2-1e4e-4173-afc2-64c6ae461124
 LReg = @load LinearRegressor pkg = "MLJLinearModels" verbosity=0
 
-# ╔═╡ 0e420c3f-b50a-41ba-a4c3-5adf5566815c
+# ╔═╡ a23d1cc8-e1c8-45bd-8e0b-c9daaac80f5f
 reg_model = LReg(solver = Analytical())
 
-# ╔═╡ 884c7818-cbdc-477b-a201-46f5f02a4789
+# ╔═╡ c33e135f-8046-473e-a8bf-29f4bffb3bbb
 reg_mach = machine(reg_model, X_norm, Y_norm)
 
-# ╔═╡ 3b1101f5-2506-4181-b1a8-3fbef2249a9a
+# ╔═╡ 670f5e47-bf1f-4cd2-90be-880214267a29
 fit!(reg_mach, rows=train_set)
 
-# ╔═╡ 681e334f-644e-4cd0-a23b-f7e90d333d28
+# ╔═╡ 81dfcf8c-57fd-46cc-9cc7-2ab985d63ef1
 Y_pred = MLJ.predict(reg_mach, rows=test_set)
 
-# ╔═╡ c0ce6cdb-2cf9-4baa-9447-942b209821bd
+# ╔═╡ dfae1c88-aa4f-4f5d-be6b-92e96f6415cc
 println("Predicted Values: ", Y_pred)
 
-# ╔═╡ 39d3db70-22f3-44b8-80a7-318209210ad5
+# ╔═╡ 99be1778-a343-434e-a872-7857ecb49c19
 println("Actual Values: ", Y_test)
 
-# ╔═╡ 54763382-ddac-435c-8ce5-ad0ad9f98f37
+# ╔═╡ 71f348a9-b5d4-425b-84ee-9576efb962a9
 Y_pred_original = MLJ.inverse_transform(Y_smach, Y_pred)
 
-# ╔═╡ 9a4a7e4d-289d-475d-9458-80ae13908a43
+# ╔═╡ 4b1c6e22-04cb-4d61-b46c-c5f33b0cf662
 Y_actual_original = MLJ.inverse_transform(Y_smach, Y_test)
 
-# ╔═╡ ba9aefb8-87f1-4b56-8885-b4613e3c8e8b
+# ╔═╡ b84e6a26-3100-4c63-8eee-fd4fc45f83f1
 println("Inverse Transformed Predicted Values: ", Y_pred_original)
 
-# ╔═╡ ddf39187-1b39-4a2f-bf96-fc4746453627
+# ╔═╡ 8a23882e-00da-4b8a-bb7a-3490ab882138
 println("Inverse Transformed Actual Values: ", Y_actual_original)
 
-# ╔═╡ 1e4d0d65-37c9-4eea-aa74-19b8a8d402ab
+# ╔═╡ 1be57658-3189-4016-bde7-9074e1b91775
 rms_val = sqrt(mean((Y_pred_original .- Y_actual_original).^2))
 
-# ╔═╡ 19899e43-1b9c-41e5-8df9-1f3d71b1bd83
+# ╔═╡ 6a7f3e7b-64b8-40a1-b5b3-70a9c7501b83
 r2_val = 1 - sum((Y_pred_original .- Y_actual_original).^2) / sum((Y_actual_original .- mean(Y_actual_original)).^2)
 
-# ╔═╡ d053806f-3d34-4802-a6e7-a059c89f7335
+# ╔═╡ 2da57f7c-1b1d-4389-9b48-4d2503f89ee7
 println("\n--- Model Evaluation Metrics ---")
 
-# ╔═╡ 8da4caab-6ef2-4a1d-a450-b811d69b7bc9
+# ╔═╡ 4f396646-e2d2-42de-abca-b480f9697560
 println("Root Mean Square Error (RMS): ", round(rms_val, digits=2))
 
-# ╔═╡ d16fc6a3-365d-4fd5-bc77-7e2a80d4a09d
+# ╔═╡ f43d653b-8e0e-47ae-bdee-3b596ae33c67
 println("R-squared (R²): ", round(r2_val, digits=4))
 
-# ╔═╡ da35eaa0-38d5-40a9-bb5d-1a06ea7a069a
-
-
-# ╔═╡ fb086141-566a-4475-8dcc-2aa03f2d87da
+# ╔═╡ ab43b8fb-b69c-481d-8da5-cd026a840ca9
 
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -2552,64 +2545,63 @@ version = "3.6.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═b1e0bca2-118a-11f0-0cac-5bedacf5e8af
-# ╠═53a492b4-09ba-4b93-9406-37cfae922185
-# ╠═1d355f15-b655-4704-bfeb-89738a085434
-# ╠═62db11d9-df37-4f7e-bcc9-1a018f5cf6ce
-# ╠═e8e6f055-2d85-47ce-919f-614854544c0b
-# ╠═24211a9e-4dd3-41c5-89e2-430743fe99fa
-# ╠═df47a37f-c06c-4fee-97bb-d48e1beeff5e
-# ╠═3da78949-76ba-41ef-9e48-d400abf4b8de
-# ╠═310988d3-603f-48db-92c9-571ed98bcdfe
-# ╠═63522afe-af94-4c55-b2ae-87da79a84f14
-# ╠═70b85c1f-43d9-4cd9-9111-e099a3b1fae1
-# ╠═3baa2cea-5421-4786-b72a-659b43218a3b
-# ╠═381ed36b-f21e-4ce5-9c12-7d641416f096
-# ╠═b32557d6-ab98-4445-bf3a-693344c7f52c
-# ╠═ff025cb2-b434-455b-b380-cc3a4b49cf3c
-# ╠═395c9f7f-25dd-4fd6-af67-2967ab50c626
-# ╠═64e91150-a93b-4c77-b985-25a2753ac344
-# ╠═1c352c00-5bcd-4e05-a515-ccc1fd5c2e1b
-# ╠═02fea295-927c-4668-8688-54562fa4f97b
-# ╠═7dfb6a80-f768-4b4c-8288-022f8a0269fd
-# ╠═4f431b94-35ff-45ff-9b5b-0f89fd1b5481
-# ╠═f0aa7298-4cc1-4e72-8882-91774d851637
-# ╠═39031809-4986-42e0-b0bc-179ee0efa882
-# ╠═319e8140-80d3-4380-ac15-190a01e8eec0
-# ╠═e3c23527-884b-400d-bf54-f29ad3efe4a7
-# ╠═d0633b09-9804-4a3b-a53b-6c9f56310c29
-# ╠═7b0fd9ea-12ca-4bfd-9330-7a27b8aa3377
-# ╠═69d9548e-bcd4-4264-b94c-b8e90bf6b248
-# ╠═1b820dc1-254f-458b-8ee3-56f1ad3fd59f
-# ╠═99690036-4988-4f19-8ef1-9cbbe5b9a2b4
-# ╠═7d1b72b2-5cf6-4a9d-912a-87c981757ad8
-# ╠═f12d3bc2-a590-46b2-9652-6cded4e549d0
-# ╠═abba167d-fdd6-4ae1-90cd-08d6d21f1aa5
-# ╠═14b95e2b-b1e2-4dec-90e7-11b388fb7635
-# ╠═0980f411-b5d9-422a-bc55-d9ac8286d061
-# ╠═826ff561-937e-46d4-b7a2-4dae27b25576
-# ╠═32b05bbc-04a1-435a-9b44-8643790feafd
-# ╠═eaace6a5-bb27-4698-97da-843a909759f9
-# ╠═0812cb9d-cdbe-410b-8a7d-3d02169a2b7a
-# ╠═f5b2be39-06cb-4859-9295-79c3d329c0ad
-# ╠═f4f005ad-9b99-4754-a790-1a12bd1b338f
-# ╠═e6c6cf8b-0cf3-4128-b1ae-2de7cc7f6a03
-# ╠═0e420c3f-b50a-41ba-a4c3-5adf5566815c
-# ╠═884c7818-cbdc-477b-a201-46f5f02a4789
-# ╠═3b1101f5-2506-4181-b1a8-3fbef2249a9a
-# ╠═681e334f-644e-4cd0-a23b-f7e90d333d28
-# ╠═c0ce6cdb-2cf9-4baa-9447-942b209821bd
-# ╠═39d3db70-22f3-44b8-80a7-318209210ad5
-# ╠═54763382-ddac-435c-8ce5-ad0ad9f98f37
-# ╠═9a4a7e4d-289d-475d-9458-80ae13908a43
-# ╠═ba9aefb8-87f1-4b56-8885-b4613e3c8e8b
-# ╠═ddf39187-1b39-4a2f-bf96-fc4746453627
-# ╠═1e4d0d65-37c9-4eea-aa74-19b8a8d402ab
-# ╠═19899e43-1b9c-41e5-8df9-1f3d71b1bd83
-# ╠═d053806f-3d34-4802-a6e7-a059c89f7335
-# ╠═8da4caab-6ef2-4a1d-a450-b811d69b7bc9
-# ╠═d16fc6a3-365d-4fd5-bc77-7e2a80d4a09d
-# ╠═da35eaa0-38d5-40a9-bb5d-1a06ea7a069a
-# ╠═fb086141-566a-4475-8dcc-2aa03f2d87da
+# ╠═6a40cdfe-1534-11f0-0433-f1cac58f77b1
+# ╠═a0ac7f63-52e9-475f-9425-bdc6f8aa6339
+# ╠═7f67bd0c-b6fd-4487-b593-e7fa01cbe2da
+# ╠═9d4b9c2c-3abd-4642-8269-0a088550388f
+# ╠═7ca56f78-4b6c-49ec-a6f5-a4d74f1a7b81
+# ╠═a31337fb-f234-45a1-9284-815dd4aa1c2b
+# ╠═7c3c1aa0-e5aa-4f74-9f30-a4e47686bbfb
+# ╠═dabf8152-7252-414e-8cfa-625f6f1da9c7
+# ╠═cc68413d-c330-4a2c-87cb-69982d195e12
+# ╠═17dd6fac-9f34-44d7-9595-3e627fdef0f6
+# ╠═66f5e9c9-1bdf-4753-903c-ed287b4b8834
+# ╠═148c76c1-d1d7-4961-872d-06154869f3f1
+# ╠═93f54552-be58-40be-bce3-49dcc76325bf
+# ╠═292e7075-5d0f-433a-a915-807506b0a841
+# ╠═1631900f-0abe-4104-b7b0-d0811ef2b9e2
+# ╠═67372e8a-f0d9-4d2a-849a-cf4b2cdf6196
+# ╠═b521cc88-164d-4cac-b64d-f1b6a37c6473
+# ╠═1d7b4e76-2e70-473b-bdf4-422f6216e288
+# ╠═30651697-da9a-4775-a06e-c5522196af99
+# ╠═3e496447-c476-4845-917d-6fbfb9b2591e
+# ╠═75ab8d36-ef6c-4709-b810-b228b4c09be6
+# ╠═8e24f1b9-15b3-4de0-bdf2-1357d2da0849
+# ╠═2646efa1-020a-41bc-b9c6-98ecfa8f2d0c
+# ╠═96a4706a-aee5-449d-a77c-6d5312d3cd5b
+# ╠═cc8b72c6-fba4-4bc8-86c0-d5573c488c57
+# ╠═55e15e74-9093-4b68-8448-05bc00b73b59
+# ╠═89a54e46-8a8d-4114-92a8-960b5bfb62a3
+# ╠═ae17c699-2471-40a9-92af-66de7ca06f39
+# ╠═fd58c116-c1b4-4ea8-b704-1a4cb0365163
+# ╠═48bda9cc-e161-4552-837b-92923c139f33
+# ╠═46745806-370f-4d69-97e9-53e5e1a466e5
+# ╠═bf7c69b7-7288-44a2-a8f5-f107ed73bd48
+# ╠═33369b1f-15d4-42e4-a4df-16191e1a5bc9
+# ╠═6ba87e58-3da3-46ee-a4f9-c5c2381f7deb
+# ╠═135eaab0-c727-45c6-8642-e5743b609110
+# ╠═f8a07170-2fe9-4625-8af7-974dda6befca
+# ╠═f507776b-5694-425a-bbcc-37da0719b9cc
+# ╠═473aa558-b506-41d4-b6c4-a3481c0e87fe
+# ╠═bb27abed-bf47-4bc3-87eb-fe6320002afb
+# ╠═99b35c51-d7e8-4e52-b879-c13977350802
+# ╠═94f08588-1c8f-4eb7-ac09-1557a82dc661
+# ╠═d94c32d2-1e4e-4173-afc2-64c6ae461124
+# ╠═a23d1cc8-e1c8-45bd-8e0b-c9daaac80f5f
+# ╠═c33e135f-8046-473e-a8bf-29f4bffb3bbb
+# ╠═670f5e47-bf1f-4cd2-90be-880214267a29
+# ╠═81dfcf8c-57fd-46cc-9cc7-2ab985d63ef1
+# ╠═dfae1c88-aa4f-4f5d-be6b-92e96f6415cc
+# ╠═99be1778-a343-434e-a872-7857ecb49c19
+# ╠═71f348a9-b5d4-425b-84ee-9576efb962a9
+# ╠═4b1c6e22-04cb-4d61-b46c-c5f33b0cf662
+# ╠═b84e6a26-3100-4c63-8eee-fd4fc45f83f1
+# ╠═8a23882e-00da-4b8a-bb7a-3490ab882138
+# ╠═1be57658-3189-4016-bde7-9074e1b91775
+# ╠═6a7f3e7b-64b8-40a1-b5b3-70a9c7501b83
+# ╠═2da57f7c-1b1d-4389-9b48-4d2503f89ee7
+# ╠═4f396646-e2d2-42de-abca-b480f9697560
+# ╠═f43d653b-8e0e-47ae-bdee-3b596ae33c67
+# ╠═ab43b8fb-b69c-481d-8da5-cd026a840ca9
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
